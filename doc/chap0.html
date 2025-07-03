@@ -42,8 +42,8 @@ padding: 15px;
 <div class="markdown-heading"><h1 class="heading-element">Your work environnement</h1><a id="user-content-your-work-environnement" class="anchor" aria-label="Permalink: Your work environnement" href="#your-work-environnement"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
 <p>To have the best work environment for your training we recommand you to run:</p>
 <ul>
-<li>The lastest <strong>Ubuntu Long Term Support version (v 20.04 right now)</strong>, or equivalent</li>
-<li>Or the <strong>second to last macOS version (v 11.4 right now)</strong> if you're a <strong>Mac</strong> user</li>
+<li>The lastest <strong>Ubuntu Long Term Support version (v 24.04 right now)</strong>, or equivalent</li>
+<li>Or the <strong>second to last macOS version (v 15.5 right now)</strong> if you're a <strong>Mac</strong> user</li>
 </ul>
 <p>We recommend you to <strong>never</strong> use the latest, bleeding edge version of anything, or you'll risk wasting time debugging some unseen, undocumented issues. And that's just not the purpose of this training, as we prefer you to focus on our stack.</p>
 <div class="markdown-heading"><h1 class="heading-element">Prerequisite</h1><a id="user-content-prerequisite" class="anchor" aria-label="Permalink: Prerequisite" href="#prerequisite"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
@@ -69,12 +69,12 @@ This is related to three main reasons:</p>
 on the <code>asdf</code> README.</p>
 <p>Then we need to install the <strong>Erlang</strong> and the <strong>Elixir</strong> plugins. For that,
 you simply have to run the following commands.</p>
-<pre><code>asdf plugin-add erlang
-asdf plugin-add elixir
-asdf install erlang 23.1
-asdf install elixir 1.11.3
-asdf global erlang 23.1
-asdf global elixir 1.11.3
+<pre><code>asdf plugin add erlang
+asdf plugin add elixir
+asdf install erlang 28.0.1
+asdf install elixir 1.18.4-otp-28
+asdf set -u erlang 28.0.1
+asdf set -u elixir 1.18.4-otp-28
 </code></pre>
 <p><em><code>erlang</code> needs the following dependencies to work <code>libssl-dev</code>, <code>automake</code>, <code>autoconf</code> and <code>libncurses5-dev</code>.</em></p>
 <p>The two first commands add <strong>erlang</strong> and <strong>elixir</strong> to the dependencies of
