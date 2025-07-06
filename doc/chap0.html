@@ -386,14 +386,40 @@ iex&gt; r &lt;ModuleToReload&gt;
           Do you know the differences between a bitstring, a binary and a
           charlist ? How do you write them in Elixir ? In Erlang ?
         </li>
+        <ul>
+          <li>
+            A Bitstring is a list of integer from 0 to 256 (maximum 1 byte, and by default 1 byte).
+            <pre><code>
+iex> <<4>> 
+iex> <<8, 2, 256>>
+            </code></pre>
+          </li>
+          <li>
+            A Binary is exactly like a Bitstring, but each number is divisible by 8. Very usuful sfor some data structures, such as UTF-8 strings. The syntax is the same as the Bitstring.
+          </li>
+          <li>
+            A Charlist is data structure not very used in Elixir, but well know in Erlang. We might face them when interacting with Erlang libraries. They are lists of integers where each integer point to a character. They can be anything from 0 to 1 114 111. 
+          <pre><code>
+iex> kbrw_charlist = ~c<q>kbrw</q>
+~c<q>kbrw</q>
+
+iex> IO.inspect(kbrw_charlist, charlists: :as_list)
+[107, 98, 114, 119]
+~c<q>kbrw</q> 
+            </code></pre>
+          </li>
+        </ul>
         <li>What is the main difference between a Stream and an Enum ?</li>
+        <ul>
+          <li>Both of those two functions can handle collections and iterate over them. But the difference is in the way they handle them. The Enum function will compute everything in the collection. But the Steam function will first evaluate what values will be compute, and then proceed to the update. For example, with a list of integer <code>[1, 2, 3, 4]</code>, if we want to multiply every number and then filter only the odd numbers, the Enum function will iterate on every items, and then filter ; whereas the Steam function will multply only the odd numbers.</li>
+        </ul>
         <li>
           Sort this data structures from the cheapest to the most expensive one
-          in terms of number of operations and CPU time:
+          in terms of number of operations and CPU time: List, Bitstring, Charlist.
           <ul>
-            <li>List</li>
-            <li>Bitstring</li>
-            <li>Charlist</li>
+            <li>
+              Those three data structures are more or less linked list, so the time to move from an item to another is the same complexity O(n). However, the way they handle data is a bit different, so when we will start to dig into those data structures, the number of operations is not the same. The List is the most expensive, since every type of data can be into it, from the small interger to the gigantic object. Then, we have the Charlist, that only hold integers from 0 to 1 114 111. And finally, we have the Bitstring, which is a list of interger, but from 0 to 256.
+            </li>
           </ul>
         </li>
       </ul>
