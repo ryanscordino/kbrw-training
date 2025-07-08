@@ -15,14 +15,14 @@ defmodule Server.Database do
 
   @impl true
   def init(_) do
-    table = :ets.new(:kv_table, [:named_table, :public, read_concurrency: true])
+    table = :ets.new(:kv_table, [:named_table, read_concurrency: true])
     {:ok, table}
   end
 
   @impl true
   def handle_cast({:push, {key, value}}, _state) do
-    value = :ets.insert_new(:kv_table, {key, value})
-    {:noreply, value}
+    :ets.insert_new(:kv_table, {key, value})
+    {:noreply, {key, value}}
   end
 
   @impl true
