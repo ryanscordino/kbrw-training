@@ -1,0 +1,39 @@
+defmodule Server.Database do
+  use GenServer
+
+  def start_link(init_args \\ {}) do
+    GenServer.start_link(__MODULE__, init_args)
+  end
+
+  def push(pid, element) do
+    GenServer.cast(pid, {:push, element})
+  end
+
+  def get(pid, key) do
+    GenServer.call(pid, {:get, key})
+  end
+
+  @impl true
+  def init({key, value}) do
+    values = :ets.insert_new(:kv_table, {key, value})
+    {:ok, {:kv_table, values}}
+  end
+
+  @impl true
+  def init({}) do
+    table = :ets.new(:kv_table, [:named_table])
+    {:ok, table}
+  end
+
+  @impl true
+  def handle_cast({:push, {key, value}}, _state) do
+    value = :ets.insert_new(:kv_table, {key, value})
+    {:noreply, value}
+  end
+
+  @impl true
+  def handle_call({:get, key}, _from, state) do
+    value = :ets.lookup(:kv_table, key)
+    {:reply, value, state}
+  end
+end

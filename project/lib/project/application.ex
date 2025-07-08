@@ -10,6 +10,7 @@ defmodule Project.Application do
     children = [
       # Starts a worker by calling: Project.Worker.start_link(arg)
       # {Project.Worker, arg}
+      Server.Supervisor
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
