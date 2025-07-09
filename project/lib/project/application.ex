@@ -10,7 +10,8 @@ defmodule Project.Application do
     children = [
       # Starts a worker by calling: Project.Worker.start_link(arg)
       # {Project.Worker, arg}
-      Server.Supervisor
+      Server.Supervisor,
+      {Plug.Cowboy, scheme: :http, plug: PlugRouter, options: [port: 4040]}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
