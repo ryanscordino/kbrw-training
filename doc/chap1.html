@@ -720,20 +720,37 @@
       </div>
       <ul>
         <li>Why use an ETS table ?</li>
+        <ul>
+          <li>An ETS table is useful to create quickly a cache system within our Elixir codebase. An ETS table is useful when we want to quickly share ressources between services, such as a key-value database./li>
+        </ul>
         <li>
           What are the advantages of wrapping an ETS table inside a GenServer ?
+          <ul>
+            <li>Wrapping an ETS table inside a GenServer allow us to control, supervise and standardized the way we interact with our ETS table. Because the GenServer makes a difference between asynchronous call (cast) and synchronous call (call), we can choose properly the way we want to interact with our table.</li>
+          </ul>
         </li>
         <li>What is a <code>Behaviour</code> in Elixir ?</li>
+        <ul>
+          <li>Behaviours help to specify how a set of function should work (~ behaved), so that, the engineer could focus on the business logic of his codebase and not what kind of input and output are expected. An exemple are the functions <code>handle_cast</code> and <code>handle_call</code>. They are implemented by the behaviour explained in the GenServer module.</li>
+          <li>To implement a behaviour, we need to use the <code>@callback</code> attribute, such as : <code> @callback parse(String.t) :: {:ok, term} | {:error, atom}</code></li>
+          <li>Then, we need to use the attribute <code>@behaviour NameOfTheBehaviour</code> at the top of our new module, and then use <code>@impl NameOfTheBehaviour</code> at the beginning of each function that should implement the behaviour expected.</li>
+        </ul>
       </ul>
       <p><strong>Go further</strong></p>
       <ul>
         <li>
           What are the differences between a <code>Protocol</code> and a
           <code>Behaviour</code> ?
+          <ul>
+            <li>As well explained by Elixir's creator José Valim <a href="https://groups.google.com/g/elixir-lang-talk/c/S0NlOoc4ThM/m/J2aD2hKrtuoJ">here</a>, protocol are behviours with a dispatching logic. A Behaviour is a light way to explain the expected way a function should work (such as the <code>handle</code> functions in a GenServer. But Procotols allow us to do polymorphism, so that a function will work differently regarding the data received. It works as an interface in Java for example.</li>
+          </ul>
         </li>
         <li>
           In which cases would you want to use a <code>Protocol</code> ? a
           <code>Behaviour</code> ?
+          <ul>
+            <li></li>
+          </ul>
         </li>
       </ul>
       <hr />

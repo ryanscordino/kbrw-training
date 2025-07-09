@@ -15,6 +15,10 @@ defmodule Server.Database do
     GenServer.call(pid, {:get, key})
   end
 
+  def search(pid, criteria) do
+    GenServer.call(pid, {:search, criteria})
+  end
+
   @impl true
   def init(_) do
     table = :ets.new(:kv_table, [:public, :named_table, read_concurrency: true])
@@ -31,5 +35,21 @@ defmodule Server.Database do
   def handle_call({:get, key}, _from, state) do
     value = :ets.lookup(:kv_table, key)
     {:reply, value, state}
+  end
+
+  @impl true
+  def handle_call({:search, criterias}, _from, state) do
+    order =
+      Enum.reduce(criterias, [], fn criteria, acc ->
+        case :ets.lookup(:kv_table, criteria) do
+          [obj] ->
+            [obj | acc]
+
+          _ ->
+            nil
+        end
+      end)
+
+    {:reply, order, state}
   end
 end

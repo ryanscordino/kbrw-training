@@ -7,6 +7,8 @@ defmodule JsonLoader do
       Enum.map(json, fn elem ->
         Database.push(database, {Map.get(elem, "id"), elem})
       end)
+
+      {:ok, :json_loaded}
     end
   end
 end
