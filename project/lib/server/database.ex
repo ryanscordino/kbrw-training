@@ -1,15 +1,17 @@
 defmodule Server.Database do
   use GenServer
 
-  def start_link(_) do
+  def start_link([]) do
     GenServer.start_link(__MODULE__, [], name: Db)
   end
 
-  def push(pid, element) do
-    GenServer.cast(pid, {:push, element})
+  def push(pid, {key, value}) do
+    GenServer.cast(pid, {:push, {key, value}})
   end
 
-  def get(pid, key) do
+  def push(_, _), do: {:error, :wrong_data}
+
+  def get(pid, key) when is_binary(key) do
     GenServer.call(pid, {:get, key})
   end
 
