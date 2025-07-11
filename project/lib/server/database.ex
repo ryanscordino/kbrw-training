@@ -15,6 +15,10 @@ defmodule Server.Database do
     GenServer.call(pid, {:get, key})
   end
 
+  def delete(pid, key) do
+    GenServer.cast(pid, {:delete, key})
+  end
+
   def search(pid, criteria) do
     GenServer.call(pid, {:search, criteria})
   end
@@ -29,6 +33,12 @@ defmodule Server.Database do
   def handle_cast({:push, {key, value}}, _state) do
     :ets.insert_new(:kv_table, {key, value})
     {:noreply, {key, value}}
+  end
+
+  @impl true
+  def handle_cast({:delete, key}, _state) do
+    :ets.delete(:kv_table, key)
+    {:noreply, key}
   end
 
   @impl true

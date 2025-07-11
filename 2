@@ -1,50 +1,18 @@
-defmodule Server.Database do
-  use GenServer
+defmodule Server.TheCreator do
+  # TODO: Look at https://github.com/elixir-plug/plug/blob/v1.18.1/lib/plug/router.ex#L1    
 
-  def start_link([]) do
-    GenServer.start_link(__MODULE__, [], name: Db)
+  defmacro __using__ do
+    import Plug.Conn
   end
 
-  def push(pid, {key, value}) do
-    GenServer.cast(pid, {:push, {key, value}})
+  defmacro __before_compile__(_env) do
   end
 
-  def push(_, _), do: {:error, :wrong_data}
-
-  def get(pid, key) when is_binary(key) do
-    GenServer.call(pid, {:get, key})
-  end
-
-  def search(pid, criteria) do
-    GenServer.call(pid, {:search, criteria})
-  end
-
-  @impl true
-  def init(_) do
-    table = :ets.new(:kv_table, [:public, :named_table, read_concurrency: true])
-    {:ok, table}
-  end
-
-  @impl true
-  def handle_cast({:push, {key, value}}, _state) do
-    :ets.insert_new(:kv_table, {key, value})
-    {:noreply, {key, value}}
-  end
-
-  @impl true
-  def handle_call({:get, key}, _from, state) do
-    value = :ets.lookup(:kv_table, key)
-    {:reply, value, state}
-  end
-
-  @impl true
-  def handle_call({:search, criterias}, _from, state) do
-    order = ["test"]
-
-    Enum.map(criterias, fn criteria ->
-      [:ets.lookup(:kv_table, criteria) | order]
-    end)
-
-    {:reply, order, state}
+  defmacro my_get(path, do: {200, text}) do
+    def call(%Plug.Conn{} = conn, _opts) do
+      conn
+      |> put_resp_content_type("text/plain")
+      |> send_resp(404, "Go away, you are not welcome here")
+    end
   end
 end
