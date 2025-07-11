@@ -11,7 +11,7 @@ defmodule Project.Application do
       # Starts a worker by calling: Project.Worker.start_link(arg)
       # {Project.Worker, arg}
       Server.Supervisor,
-      {Plug.Cowboy, scheme: :http, plug: PlugRouter2, options: [port: 4040]}
+      {Plug.Cowboy, scheme: :http, plug: PlugRouter2, options: [port: 4041]}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
