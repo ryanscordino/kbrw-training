@@ -19,13 +19,18 @@ defmodule Server.Database do
     GenServer.cast(pid, {:delete, key})
   end
 
-  def search(pid, criteria) do
+  def search(pid, criteria) when is_list(criteria) or is_map(criteria) do
     GenServer.call(pid, {:search, criteria})
+  end
+
+  def update(pid, {key, value}) do
+    GenServer.cast(pid, {:update, {key, value}})
   end
 
   @impl true
   def init(_) do
     table = :ets.new(:kv_table, [:public, :named_table, read_concurrency: true])
+    JsonLoader.load_to_database(Db, "data/orders_chunk0.json")
     {:ok, table}
   end
 
@@ -42,6 +47,14 @@ defmodule Server.Database do
   end
 
   @impl true
+  def handle_cast({:update, {key, value}}, _state) do
+    with __MODULE__.delete(Db, key) do
+      __MODULE__.push(Db, {key, value})
+      {:noreply, {key, value}}
+    end
+  end
+
+  @impl true
   def handle_call({:get, key}, _from, state) do
     value = :ets.lookup(:kv_table, key)
     {:reply, value, state}
@@ -49,17 +62,23 @@ defmodule Server.Database do
 
   @impl true
   def handle_call({:search, criterias}, _from, state) do
-    order =
-      Enum.reduce(criterias, [], fn criteria, acc ->
-        case :ets.lookup(:kv_table, criteria) do
-          [obj] ->
-            [obj | acc]
+    with(criterias_formatted <- handle_params(criterias)) do
+      order =
+        Enum.reduce(criterias_formatted, [], fn criteria, acc ->
+          case :ets.lookup(:kv_table, criteria) do
+            [obj] ->
+              [obj | acc]
 
-          _ ->
-            nil
-        end
-      end)
+            _ ->
+              acc
+          end
+        end)
 
-    {:reply, order, state}
+      IO.inspect(order)
+      {:reply, order, state}
+    end
   end
+
+  defp handle_params(params) when is_map(params), do: Map.values(params)
+  defp handle_params(params) when is_list(params), do: params
 end
