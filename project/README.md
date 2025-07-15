@@ -1,6 +1,5 @@
 # Project
 
-**TODO: Add description**
 
 ## Installation
 
