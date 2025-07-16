@@ -1,24 +1,27 @@
 module.exports = {
-  entry: './script.js',
-  mode: 'development',
-  devtool: 'inline-source-map',
-  output: { filename: 'bundle.js' },
+  entry: "./script.js",
+  mode: "development",
+  devtool: "inline-source-map",
+  output: {
+    filename: "bundle.js",
+  },
   plugins: [],
   module: {
     rules: [
       {
-        test: /.js?$/,
+        test: /\.js?$/,
         use: {
-          loader: 'babel-loader',
+          loader: "babel-loader",
           options: {
             presets: [
-              ["@babel/preset-env", { "targets": "defaults" }],
-              "@babel/preset-react"
-            ]
-          }
+              ["@babel/preset-env", { targets: "defaults" }],
+              "@babel/preset-react",
+              ["@kbrw/jsxz"],
+            ],
+          },
         },
-        exclude: /node_modules/
-      }
-    ]
+        exclude: /node_modules/,
+      },
+    ],
   },
-}
+};
