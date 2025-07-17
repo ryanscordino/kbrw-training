@@ -7,7 +7,6 @@ defmodule Router3 do
   """
 
   use Plug.Router
-  require Poison
 
   plug(:match)
 

@@ -6,7 +6,8 @@ var Page = createReactClass({
   render() {
     return (
       <JSXZ in="webflow/template" sel=".container">
-        <Z sel=".item">Burgers</Z>,<Z sel=".price">50</Z>
+        <Z sel=".item">Burgers</Z>
+        <Z sel=".price">50</Z>
       </JSXZ>
     );
   },
