@@ -8,11 +8,15 @@ defmodule Router3 do
 
   use Plug.Router
 
+  plug(Plug.Static, from: "priv/static", at: "/static")
   plug(:match)
-
   plug(:dispatch)
 
-  get("/search") do
+  get("/main.js", do: send_file(conn, 200, "priv/static/main.js"))
+  get("/styles.js", do: send_file(conn, 200, "priv/static/styles.js"))
+  get("/styles.css", do: send_file(conn, 200, "priv/static/styles.css"))
+
+  get("/api/search") do
     with %Plug.Conn{query_params: params} <- Plug.Conn.fetch_query_params(conn),
          [{_id, response}] <- Server.Database.search(Db, params) do
       conn
@@ -23,7 +27,7 @@ defmodule Router3 do
     end
   end
 
-  post("/create") do
+  post("/api/create") do
     with %Plug.Conn{query_params: %{"key" => key, "value" => value}} <-
            Plug.Conn.fetch_query_params(conn),
          Server.Database.push(Db, {key, value}) do
@@ -33,7 +37,7 @@ defmodule Router3 do
     end
   end
 
-  post("/delete") do
+  post("/api/delete") do
     with %Plug.Conn{query_params: %{"key" => key}} <- Plug.Conn.fetch_query_params(conn),
          :ok <- Server.Database.delete(Db, key) do
       conn
@@ -44,7 +48,7 @@ defmodule Router3 do
     end
   end
 
-  post("/update") do
+  post("/api/update") do
     with %Plug.Conn{query_params: %{"key" => key, "value" => value}} <-
            Plug.Conn.fetch_query_params(conn),
          :ok <- Server.Database.update(Db, {key, value}) do
@@ -54,5 +58,6 @@ defmodule Router3 do
     end
   end
 
+  get(_, do: send_file(conn, 200, "priv/static/index.html"))
   match(_, do: send_resp(conn, 404, "Not found"))
 end
