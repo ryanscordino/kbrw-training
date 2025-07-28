@@ -1,0 +1,12 @@
+.modal-wrapper {
+  display: flex
+}
+
+.modal-content {
+  display: flex
+}
+
+.loader-container {
+  display: flex
+}
+
