@@ -30,7 +30,7 @@ defmodule Server.Database do
   @impl true
   def init(_) do
     table = :ets.new(:kv_table, [:public, :named_table, read_concurrency: true])
-    JsonLoader.load_to_database(Db, "data/orders_chunk0.json")
+    JsonLoader.load_to_database(Db, "data/chap5.json")
     {:ok, table}
   end
 

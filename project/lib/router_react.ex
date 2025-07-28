@@ -1,9 +1,9 @@
-defmodule Router3 do
+defmodule RouterReact do
   @moduledoc """
   This module build a router which interacts with the `:kv_table`. Because some of the funcions here are extented by macro, we can't document them direclty. We are going to describe them directly here.
 
   `get(/search)`
-  Search values from a list of params. Be careful! If you put a duplicate key (two times the same key), one is going to be replace by the others. 
+  Search values from a list of params. Be careful! If you put a duplicate key (two times the same key), one is going to be replace by the others.
   """
 
   use Plug.Router
@@ -16,12 +16,36 @@ defmodule Router3 do
   get("/styles.js", do: send_file(conn, 200, "priv/static/styles.js"))
   get("/styles.css", do: send_file(conn, 200, "priv/static/styles.css"))
 
+  get("/api/orders") do
+    # Get all orders from the database
+    orders = Server.Database.search(Db, [])
+    orders_data = Enum.map(orders, fn {_key, value} -> value end)
+
+    conn
+    |> put_resp_content_type("application/json")
+    |> send_resp(200, Poison.encode!(orders_data))
+  end
+
+  get("/api/order/:id") do
+    order_id = conn.path_params["id"]
+
+    case Server.Database.get(Db, order_id) do
+      [{_key, order}] ->
+        conn
+        |> put_resp_content_type("application/json")
+        |> send_resp(200, Poison.encode!(order))
+
+      [] ->
+        send_resp(conn, 404, "Order not found")
+    end
+  end
+
   get("/api/search") do
     with %Plug.Conn{query_params: params} <- Plug.Conn.fetch_query_params(conn),
          [{_id, response}] <- Server.Database.search(Db, params) do
       conn
       |> put_resp_content_type("application/json")
-      |> send_resp(200, JSON.encode!(response))
+      |> send_resp(200, Poison.encode!(response))
     else
       _ -> send_resp(conn, 404, "No data found")
     end
