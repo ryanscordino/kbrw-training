@@ -53,6 +53,8 @@ defmodule RouterReact do
 
   delete("/api/order/:id") do
     order_id = conn.path_params["id"]
+    # Simulate a delay for the delete operation
+    :timer.sleep(500)
 
     case Server.Database.delete(Db, order_id) do
       :ok ->
@@ -75,16 +77,16 @@ defmodule RouterReact do
     end
   end
 
-  post("/api/delete") do
-    with %Plug.Conn{query_params: %{"key" => key}} <- Plug.Conn.fetch_query_params(conn),
-         :ok <- Server.Database.delete(Db, key) do
-      conn
-      |> put_resp_content_type("application/json")
-      |> send_resp(200, "deleted!")
-    else
-      _ -> send_resp(conn, 404, "No data found")
-    end
-  end
+  # post("/api/delete") do
+  #   with %Plug.Conn{query_params: %{"key" => key}} <- Plug.Conn.fetch_query_params(conn),
+  #        :ok <- Server.Database.delete(Db, key) do
+  #     conn
+  #     |> put_resp_content_type("application/json")
+  #     |> send_resp(200, "deleted!")
+  #   else
+  #     _ -> send_resp(conn, 404, "No data found")
+  #   end
+  # end
 
   post("/api/update") do
     with %Plug.Conn{query_params: %{"key" => key, "value" => value}} <-

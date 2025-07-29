@@ -12,7 +12,7 @@ var Qs = require("qs");
 var Cookie = require("cookie");
 
 var XMLHttpRequest = require("xhr2");
-var HTTP = new (function() {
+var HTTP = new (function () {
   this.get = (url) => this.req("GET", url);
   this.delete = (url) => this.req("DELETE", url);
   this.post = (url, data) => this.req("POST", url, data);
@@ -115,7 +115,7 @@ var Child = createReactClass({
   },
 });
 
-var cn = function() {
+var cn = function () {
   var args = arguments,
     classes = {};
   for (var i in args) {
@@ -138,7 +138,7 @@ var cn = function() {
 };
 
 var Layout = createReactClass({
-  getInitialState: function() {
+  getInitialState: function () {
     return {
       modal: null,
       loader: null,
@@ -225,7 +225,6 @@ var DeleteModal = createReactClass({
       <JSXZ in="modal" sel=".modal-content">
         <p>{this.props.title}</p>
         <p>{this.props.message}</p>
-        <p>---</p>
         <button
           onClick={() => {
             this.props.callback(true);
@@ -251,7 +250,7 @@ var Orders = createReactClass({
     remoteProps: [remoteProps.orders],
   },
   render() {
-    console.log("Start orders")
+    console.log("Start orders");
     console.dir(this.props, { depth: null });
     console.dir(this.props.orders.value, { depth: null });
     return (
@@ -282,7 +281,9 @@ var Orders = createReactClass({
                     onClick={() => {
                       GoTo("order", order.id);
                     }}
-                  ></Z>
+                  >
+                    
+                  </Z>
                   <Z in="orders" sel=".div-body-table .button-pay"></Z>
                   <Z in="orders" sel=".div-block-6 .tag-status">
                     {payment.account_status ? payment.account.status : "Null"}
@@ -301,6 +302,7 @@ var Orders = createReactClass({
                         message: `Are you sure you want to delete order ${order.id} ?`,
                         callback: (value) => {
                           if (value) {
+                            // Start the loader and HTTP request immediately
                             const loader_callback = this.props.loader();
                             HTTP.delete(`/api/order/${order.id}`)
                               .then((_) => {
@@ -319,7 +321,9 @@ var Orders = createReactClass({
                         },
                       });
                     }}
-                  >delete</Z>
+                  >
+                    delete
+                  </Z>
                 </JSXZ>
               );
             })}
