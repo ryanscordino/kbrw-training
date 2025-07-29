@@ -17,9 +17,8 @@ defmodule RouterReact do
   get("/styles.css", do: send_file(conn, 200, "priv/static/styles.css"))
 
   get("/api/orders") do
-    # Get all orders from the database
-    orders = Server.Database.search(Db, [])
-    orders_data = Enum.map(orders, fn {_key, value} -> value end)
+    # Get the first 10 orders from the database
+    orders_data = Server.Database.get_first_n(Db, 10)
 
     conn
     |> put_resp_content_type("application/json")
@@ -48,6 +47,20 @@ defmodule RouterReact do
       |> send_resp(200, Poison.encode!(response))
     else
       _ -> send_resp(conn, 404, "No data found")
+    end
+  end
+
+  delete("/api/order/:id") do
+    order_id = conn.path_params["id"]
+
+    case Server.Database.delete(Db, order_id) do
+      :ok ->
+        conn
+        |> put_resp_content_type("application/json")
+        |> send_resp(200, Poison.encode!(%{message: "Order deleted successfully"}))
+
+      _ ->
+        send_resp(conn, 404, "Order not found")
     end
   end
 

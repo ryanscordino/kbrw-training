@@ -23,6 +23,14 @@ defmodule Server.Database do
     GenServer.call(pid, {:search, criteria})
   end
 
+  def get_all(pid) do
+    GenServer.call(pid, :get_all)
+  end
+
+  def get_first_n(pid, n) when is_integer(n) do
+    GenServer.call(pid, {:get_first_n, n})
+  end
+
   def update(pid, {key, value}) do
     GenServer.cast(pid, {:update, {key, value}})
   end
@@ -30,7 +38,7 @@ defmodule Server.Database do
   @impl true
   def init(_) do
     table = :ets.new(:kv_table, [:public, :named_table, read_concurrency: true])
-    JsonLoader.load_to_database(Db, "data/chap5.json")
+    JsonLoader.load_to_database(Db, "data/orders_chunk0.json")
     {:ok, table}
   end
 
@@ -77,6 +85,24 @@ defmodule Server.Database do
       IO.inspect(order)
       {:reply, order, state}
     end
+  end
+
+  @impl true
+  def handle_call(:get_all, _from, state) do
+    all_orders = 
+      :ets.tab2list(:kv_table)
+      |> Enum.map(fn {_key, value} -> value end)
+    {:reply, all_orders, state}
+  end
+
+  @impl true
+  def handle_call({:get_first_n, n}, _from, state) do
+    all_orders = :ets.tab2list(:kv_table)
+    first_n_orders = 
+      all_orders
+      |> Enum.map(fn {_key, value} -> value end)
+      |> Enum.take(n)
+    {:reply, first_n_orders, state}
   end
 
   defp handle_params(params) when is_map(params), do: Map.values(params)
