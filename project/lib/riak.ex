@@ -2,7 +2,7 @@ defmodule Riak do
   # For the sake of the exercice, every bucket will be link with the bucket_name
 
   def url, do: "https://kbrw-sb-tutoex-riak-gateway.kbrw.fr"
-  def bucket_name, do: "ryan_scordino_bucket"
+  def bucket_name, do: "ryan_scordino_orders"
 
   def auth_header do
     username = "sophomore"
@@ -126,5 +126,124 @@ defmodule Riak do
   # Create a bucket by putting a dummy object (as mentioned in the chapter)
   def create_bucket() do
     put_object("first_key", "first_value")
+  end
+
+  # Upload a schema to Riak
+  def upload_schema(schema_name, schema_content) do
+    url_str = ~c"#{url()}/search/schema/#{schema_name}"
+    headers = auth_header()
+    content_type = ~c"application/xml"
+    body = schema_content
+
+    case :httpc.request(:put, {url_str, headers, content_type, body}, [], []) do
+      {:ok, {{_, 204, _}, _headers, _body}} ->
+        :ok
+
+      {:ok, {{_, status_code, _}, _headers, body}} ->
+        {:error, "HTTP #{status_code}: #{body}"}
+
+      {:error, reason} ->
+        {:error, reason}
+    end
+  end
+
+  # Create an index based on a schema
+  def create_index(index_name, schema_name) do
+    url_str = ~c"#{url()}/search/index/#{index_name}"
+    headers = auth_header()
+    content_type = ~c"application/json"
+    body = Poison.encode!(%{"schema" => schema_name})
+
+    case :httpc.request(:put, {url_str, headers, content_type, body}, [], []) do
+      {:ok, {{_, 204, _}, _headers, _body}} ->
+        :ok
+
+      {:ok, {{_, status_code, _}, _headers, body}} ->
+        {:error, "HTTP #{status_code}: #{body}"}
+
+      {:error, reason} ->
+        {:error, reason}
+    end
+  end
+
+  # Assign an index to a bucket
+  def assign_index_to_bucket(index_name) do
+    url_str = ~c"#{url()}/buckets/#{bucket_name()}/props"
+    headers = auth_header()
+    content_type = ~c"application/json"
+    body = Poison.encode!(%{"props" => %{"search_index" => index_name}})
+
+    case :httpc.request(:put, {url_str, headers, content_type, body}, [], []) do
+      {:ok, {{_, 204, _}, _headers, _body}} ->
+        :ok
+
+      {:ok, {{_, status_code, _}, _headers, body}} ->
+        {:error, "HTTP #{status_code}: #{body}"}
+
+      {:error, reason} ->
+        {:error, reason}
+    end
+  end
+
+  # Get the list of indexes
+  def get_indexes do
+    url_str = ~c"#{url()}/search/index"
+    headers = auth_header()
+
+    case :httpc.request(:get, {url_str, headers}, [], []) do
+      {:ok, {{_, 200, _}, _headers, body}} ->
+        case Poison.decode(body) do
+          {:ok, decoded_body} -> {:ok, decoded_body}
+          {:error, reason} -> {:error, reason}
+        end
+
+      {:ok, {{_, status_code, _}, _headers, body}} ->
+        {:error, "HTTP #{status_code}: #{body}"}
+
+      {:error, reason} ->
+        {:error, reason}
+    end
+  end
+
+  # Empty a bucket (delete all keys)
+  def empty_bucket() do
+    case get_keys() do
+      {:ok, keys} ->
+        keys
+        |> Enum.each(fn key -> delete_object(key) end)
+
+        :ok
+
+      {:error, reason} ->
+        {:error, reason}
+    end
+  end
+
+  # Delete a bucket (remove props, effectively "deleting" it)
+  def delete_bucket() do
+    url_str = ~c"#{url()}/buckets/#{bucket_name()}/props"
+    headers = auth_header()
+
+    case :httpc.request(:delete, {url_str, headers}, [], []) do
+      {:ok, {{_, 204, _}, _headers, _body}} ->
+        :ok
+
+      {:ok, {{_, status_code, _}, _headers, body}} ->
+        {:error, "HTTP #{status_code}: #{body}"}
+
+      {:error, reason} ->
+        {:error, reason}
+    end
+  end
+
+  # Helper function to read schema from file and upload it
+  def upload_schema_from_file(schema_name, file_path) do
+    case File.read(file_path) do
+      {:ok, content} ->
+        upload_schema(schema_name, content)
+
+      {:error, reason} ->
+        {:error, "Failed to read file: #{reason}"}
+    end
   end
 end

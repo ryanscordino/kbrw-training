@@ -286,7 +286,7 @@ var Orders = createReactClass({
                   </Z>
                   <Z in="orders" sel=".div-body-table .button-pay"></Z>
                   <Z in="orders" sel=".div-block-6 .tag-status">
-                    {payment.account_status ? payment.account.status : "Null"}
+                    {payment.account_status ? payment.account_status : "Null"}
                   </Z>
                   <Z in="orders" sel=".div-block-6 .tag-delivery">
                     {payment.additional_information[1]}
