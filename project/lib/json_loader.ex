@@ -5,7 +5,7 @@ defmodule JsonLoader do
   def load_to_database(database, json_file) do
     with {:ok, body} <- File.read(json_file), {:ok, json} <- Poison.decode(body) do
       Enum.map(json, fn elem ->
-        Database.push(database, {Map.get(elem, "remoteid"), elem})
+        Database.push(database, {Map.get(elem, "id"), elem})
       end)
 
       {:ok, :json_loaded}

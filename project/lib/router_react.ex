@@ -27,6 +27,7 @@ defmodule RouterReact do
 
   get("/api/order/:id") do
     order_id = conn.path_params["id"]
+    IO.inspect(order_id)
 
     case Server.Database.get(Db, order_id) do
       [{_key, order}] ->

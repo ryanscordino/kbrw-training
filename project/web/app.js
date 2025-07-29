@@ -12,7 +12,7 @@ var Qs = require("qs");
 var Cookie = require("cookie");
 
 var XMLHttpRequest = require("xhr2");
-var HTTP = new (function () {
+var HTTP = new (function() {
   this.get = (url) => this.req("GET", url);
   this.delete = (url) => this.req("DELETE", url);
   this.post = (url, data) => this.req("POST", url, data);
@@ -115,7 +115,7 @@ var Child = createReactClass({
   },
 });
 
-var cn = function () {
+var cn = function() {
   var args = arguments,
     classes = {};
   for (var i in args) {
@@ -138,7 +138,7 @@ var cn = function () {
 };
 
 var Layout = createReactClass({
-  getInitialState: function () {
+  getInitialState: function() {
     return {
       modal: null,
       loader: null,
@@ -205,12 +205,15 @@ var Layout = createReactClass({
 
 var Header = createReactClass({
   render() {
+    console.log("Start header");
     return (
       <JSXZ in="orders" sel=".header-container">
         <Z sel=".heading-div-with-search">
           <ChildrenZ />
         </Z>
-        <Child {...this.props} />
+        <Z sel=".body-div">
+          <Child {...this.props} />
+        </Z>
       </JSXZ>
     );
   },
@@ -248,10 +251,9 @@ var Orders = createReactClass({
     remoteProps: [remoteProps.orders],
   },
   render() {
-    console.log("Orders props");
+    console.log("Start orders")
     console.dir(this.props, { depth: null });
     console.dir(this.props.orders.value, { depth: null });
-    ordersData = this.props.orders.value;
     return (
       <JSXZ in="orders" sel=".body-div">
         <Z sel=".table">
@@ -259,7 +261,7 @@ var Orders = createReactClass({
             <ChildrenZ />
           </JSXZ>
           <JSXZ in="orders" sel=".table-body">
-            {ordersData.map((order) => {
+            {this.props.orders.value.map((order) => {
               const custom = order.custom;
               const billing_address = custom.billing_address;
               const payment = custom.magento.payment;
@@ -274,56 +276,50 @@ var Orders = createReactClass({
                     ${billing_address.country_id}`}
                   </Z>
                   <Z sel=".div-body-table .quantity">{custom.items.length}</Z>
-                  <Z sel=".div-body-table">
-                    <JSXZ
-                      in="orders"
-                      sel=".button-detail"
-                      onClick={() => {
-                        GoTo("order", order.id);
-                      }}
-                    ></JSXZ>
+                  <Z
+                    in="orders"
+                    sel=".div-body-table .button-detail"
+                    onClick={() => {
+                      GoTo("order", order.id);
+                    }}
+                  ></Z>
+                  <Z in="orders" sel=".div-body-table .button-pay"></Z>
+                  <Z in="orders" sel=".div-block-6 .tag-status">
+                    {payment.account_status ? payment.account.status : "Null"}
                   </Z>
-                  <Z sel=".div-body-table">
-                    <JSXZ in="orders" sel=".button-pay"></JSXZ>
-                    <JSXZ in="orders" sel=".div-block-6">
-                      {`Status : ${payment.account_status}`}
-                    </JSXZ>
-                    <JSXZ in="orders" sel=".div-block-6">
-                      {`Method : ${payment.method}`}
-                    </JSXZ>
+                  <Z in="orders" sel=".div-block-6 .tag-delivery">
+                    {payment.additional_information[1]}
                   </Z>
-                  <Z sel=".div-body-table">
-                    <JSXZ
-                      in="orders"
-                      sel=".button-delete"
-                      onClick={() => {
-                        console.log("Delete order", order.id);
-                        this.props.modal({
-                          type: "delete",
-                          title: "Order deletion",
-                          message: `Are you sure you want to delete order ${order.id} ?`,
-                          callback: (value) => {
-                            if (value) {
-                              const loader_callback = this.props.loader();
-                              HTTP.delete(`/api/order/${order.id}`)
-                                .then((_) => {
-                                  reload("orders");
-                                  console.log(`Order ${order.id} deleted`);
-                                })
-                                .catch((err) => {
-                                  alert("Deletion fails");
-                                })
-                                .finally(() => {
-                                  loader_callback();
-                                });
-                              return;
-                            }
-                            console.log(`Order ${order.id} deletion cancelled`);
-                          },
-                        });
-                      }}
-                    ></JSXZ>
-                  </Z>
+                  <Z
+                    in="orders"
+                    sel=".button-delete"
+                    onClick={() => {
+                      console.log("Delete order", order.id);
+                      this.props.modal({
+                        type: "delete",
+                        title: "Order deletion",
+                        message: `Are you sure you want to delete order ${order.id} ?`,
+                        callback: (value) => {
+                          if (value) {
+                            const loader_callback = this.props.loader();
+                            HTTP.delete(`/api/order/${order.id}`)
+                              .then((_) => {
+                                reload("orders");
+                                console.log(`Order ${order.id} deleted`);
+                              })
+                              .catch((err) => {
+                                alert("Deletion fails");
+                              })
+                              .finally(() => {
+                                loader_callback();
+                              });
+                            return;
+                          }
+                          console.log(`Order ${order.id} deletion cancelled`);
+                        },
+                      });
+                    }}
+                  >delete</Z>
                 </JSXZ>
               );
             })}
@@ -394,6 +390,7 @@ var Order = createReactClass({
     const custom = order.custom;
     return (
       <JSXZ in="order-detail" sel=".body-div">
+        <Z sel=".order-id">{order.remoteid}</Z>
         <Z sel=".name">{order.custom.customer.full_name}</Z>
         <Z sel=".address">
           {`${custom.billing_address.street[0]}, 

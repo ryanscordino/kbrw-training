@@ -1,12 +1,19 @@
 .modal-wrapper {
-  display: flex
+  display: flex;
+  z-index: 1000;
+  background-color: grey;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
 }
 
 .modal-content {
-  display: flex
+  display: flex;
+  flex-direction: column;
 }
 
 .loader-container {
   display: flex
 }
-
