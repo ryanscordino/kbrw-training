@@ -18,38 +18,49 @@ defmodule RouterReact do
 
   get("/api/orders") do
     # Get query parameters for pagination and search
+    IO.inspect(conn.query_params, label: "Query Params")
     conn = Plug.Conn.fetch_query_params(conn)
     page = String.to_integer(conn.query_params["page"] || "0")
     rows = String.to_integer(conn.query_params["rows"] || "30")
-    search_query = conn.query_params["q"] || "*:*"  # Default to match all
-    
+    # Default to match all
+    search_query = conn.query_params["q"] || "*:*"
+
     index_name = "ryan_scordino_orders_index"
-    
+
     case Riak.search(index_name, search_query, page, rows, "creation_date_index desc") do
       {:ok, %{"response" => %{"docs" => docs, "numFound" => total}}} ->
+        IO.inspect(total)
         # Get full objects for each key found
-        orders = docs
-        |> Enum.map(fn doc -> doc["_yz_rk"] end)  # Extract Riak keys
-        |> Enum.filter(& &1)  # Remove any nil keys
-        |> Enum.map(fn key ->
-          case Riak.get_object(key) do
-            {:ok, order} -> order
-            {:error, _} -> nil
-          end
-        end)
-        |> Enum.filter(& &1)  # Remove any failed retrievals
-        
+        orders =
+          docs
+          # Extract Riak keys
+          |> Enum.map(fn doc -> doc["_yz_rk"] end)
+          # Remove any nil keys
+          |> Enum.filter(& &1)
+          |> Enum.map(fn key ->
+            case Riak.get_object(key) do
+              {:ok, order} -> order
+              {:error, _} -> nil
+            end
+          end)
+          # Remove any failed retrievals
+          |> Enum.filter(& &1)
+
         response = %{
-          orders: orders,
-          total: total,
-          page: page,
-          rows: rows
+          orders: %{
+            value: orders,
+            total: total,
+            page: page,
+            rows: rows
+          }
         }
-        
+
+        # IO.inspect(response)
+
         conn
         |> put_resp_content_type("application/json")
         |> send_resp(200, Poison.encode!(response))
-        
+
       {:error, reason} ->
         conn
         |> put_resp_content_type("application/json")
@@ -69,7 +80,7 @@ defmodule RouterReact do
 
       {:error, :not_found} ->
         send_resp(conn, 404, "Order not found")
-        
+
       {:error, reason} ->
         conn
         |> put_resp_content_type("application/json")
@@ -82,35 +93,43 @@ defmodule RouterReact do
     search_query = conn.query_params["q"] || "*:*"
     page = String.to_integer(conn.query_params["page"] || "0")
     rows = String.to_integer(conn.query_params["rows"] || "30")
-    
+
     index_name = "ryan_scordino_orders_index"
-    
+
     case Riak.search(index_name, search_query, page, rows, "creation_date_index desc") do
       {:ok, %{"response" => %{"docs" => docs, "numFound" => total}}} ->
         # Get full objects for each key found
-        orders = docs
-        |> Enum.map(fn doc -> doc["_yz_rk"] end)  # Extract Riak keys
-        |> Enum.filter(& &1)  # Remove any nil keys
-        |> Enum.map(fn key ->
-          case Riak.get_object(key) do
-            {:ok, order} -> order
-            {:error, _} -> nil
-          end
-        end)
-        |> Enum.filter(& &1)  # Remove any failed retrievals
-        
+        orders =
+          docs
+          # Extract Riak keys
+          |> Enum.map(fn doc -> doc["_yz_rk"] end)
+          # Remove any nil keys
+          |> Enum.filter(& &1)
+          |> Enum.map(fn key ->
+            case Riak.get_object(key) do
+              {:ok, order} -> order
+              {:error, _} -> nil
+            end
+          end)
+          # Remove any failed retrievals
+          |> Enum.filter(& &1)
+
+        # Format response to match frontend expectations with search metadata
+        # Format response to match frontend expectations with search metadata
         response = %{
-          orders: orders,
-          total: total,
-          page: page,
-          rows: rows,
-          query: search_query
+          orders: %{
+            value: orders,
+            total: total,
+            page: page,
+            rows: rows,
+            query: search_query
+          }
         }
-        
+
         conn
         |> put_resp_content_type("application/json")
         |> send_resp(200, Poison.encode!(response))
-        
+
       {:error, reason} ->
         conn
         |> put_resp_content_type("application/json")
@@ -131,7 +150,7 @@ defmodule RouterReact do
 
       {:error, :not_found} ->
         send_resp(conn, 404, "Order not found")
-        
+
       {:error, reason} ->
         conn
         |> put_resp_content_type("application/json")
@@ -141,31 +160,34 @@ defmodule RouterReact do
 
   post("/api/create") do
     conn = Plug.Conn.fetch_query_params(conn)
-    
+
     case conn.query_params do
       %{"key" => key, "value" => value} ->
         # Encode value as JSON if it's not already
-        json_value = if is_binary(value) do
-          case Poison.decode(value) do
-            {:ok, _} -> value  # Already valid JSON
-            {:error, _} -> Poison.encode!(%{data: value})  # Wrap in JSON object
+        json_value =
+          if is_binary(value) do
+            case Poison.decode(value) do
+              # Already valid JSON
+              {:ok, _} -> value
+              # Wrap in JSON object
+              {:error, _} -> Poison.encode!(%{data: value})
+            end
+          else
+            Poison.encode!(value)
           end
-        else
-          Poison.encode!(value)
-        end
-        
+
         case Riak.put_object(key, json_value) do
           :ok ->
             conn
             |> put_resp_content_type("application/json")
             |> send_resp(200, Poison.encode!(%{message: "Added!"}))
-            
+
           {:error, reason} ->
             conn
             |> put_resp_content_type("application/json")
             |> send_resp(500, Poison.encode!(%{error: "Failed to create: #{inspect(reason)}"}))
         end
-        
+
       _ ->
         conn
         |> put_resp_content_type("application/json")
@@ -186,31 +208,34 @@ defmodule RouterReact do
 
   post("/api/update") do
     conn = Plug.Conn.fetch_query_params(conn)
-    
+
     case conn.query_params do
       %{"key" => key, "value" => value} ->
         # Encode value as JSON if it's not already
-        json_value = if is_binary(value) do
-          case Poison.decode(value) do
-            {:ok, _} -> value  # Already valid JSON
-            {:error, _} -> Poison.encode!(%{data: value})  # Wrap in JSON object
+        json_value =
+          if is_binary(value) do
+            case Poison.decode(value) do
+              # Already valid JSON
+              {:ok, _} -> value
+              # Wrap in JSON object
+              {:error, _} -> Poison.encode!(%{data: value})
+            end
+          else
+            Poison.encode!(value)
           end
-        else
-          Poison.encode!(value)
-        end
-        
+
         case Riak.put_object(key, json_value) do
           :ok ->
             conn
             |> put_resp_content_type("application/json")
             |> send_resp(200, Poison.encode!(%{message: "Updated!", key: key, value: value}))
-            
+
           {:error, reason} ->
             conn
             |> put_resp_content_type("application/json")
             |> send_resp(500, Poison.encode!(%{error: "Failed to update: #{inspect(reason)}"}))
         end
-        
+
       _ ->
         conn
         |> put_resp_content_type("application/json")

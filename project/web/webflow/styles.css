@@ -2555,3 +2555,11 @@ textarea.w-input, textarea.w-select {
 #w-node-ea88de26-254a-d1b3-9b7d-02e685e3464f-26387994, #w-node-_1d6eb67c-54a8-78d0-5e92-02209edca219-26387994, #w-node-c1b75a2d-6fd0-7ccc-c0a4-172ea5aa5260-26387994, #w-node-ae8ca97b-511a-4289-7d72-e2209ab4714f-26387994, #w-node-d69abaa5-9570-a412-ab33-f0097c9f81f4-26387994, #w-node-f2097018-1c8f-c06a-3620-709ab27abe1a-26387994 {
   justify-self: end;
 }
+
+.back{ font-weight: bold;}
+.forward { font-weight: bold;}
+.curr { font-weight: bold; }
+
+.p-back { font-weight: bold; }
+.p-curr { font-weight: bold; }
+.p-forward { font-weight: bold; }

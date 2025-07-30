@@ -7,7 +7,7 @@ defmodule JsonLoaderRiak do
       IO.puts("Loading #{length(json)} orders to Riak...")
 
       json
-      |> Stream.chunk_every(100)
+      |> Stream.chunk_every(50)
       |> Task.async_stream(
         fn chunk ->
           Enum.map(chunk, fn order ->

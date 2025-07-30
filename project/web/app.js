@@ -249,6 +249,19 @@ var Orders = createReactClass({
   statics: {
     remoteProps: [remoteProps.orders],
   },
+  getInitialState() {
+    return {
+      searchQuery: this.props.qs.q || "",
+    };
+  },
+  handleSearchSubmit(e) {
+    e.preventDefault();
+    GoTo("orders", "", {
+      ...this.props.qs,
+      q: this.state.searchQuery,
+      page: 0, // Reset to first page when searching
+    });
+  },
   render() {
     console.log("Start orders");
     console.dir(this.props, { depth: null });
@@ -260,7 +273,7 @@ var Orders = createReactClass({
             <ChildrenZ />
           </JSXZ>
           <JSXZ in="orders" sel=".table-body">
-            {this.props.orders.value.map((order) => {
+            {this.props.orders.value.orders.value.map((order) => {
               const custom = order.custom;
               const billing_address = custom.billing_address;
               const payment = custom.magento.payment;
@@ -329,55 +342,36 @@ var Orders = createReactClass({
             })}
           </JSXZ>
         </Z>
-        {/* <Z */}
-        {/*   sel=".prev-page" */}
-        {/*   onClick={() => { */}
-        {/*     console.log("Go back to orders") */}
-        {/*     // This is because : this.props.qs.page is a string */}
-        {/*     if (this.props.qs.page && Number(this.props.qs.page)) { */}
-        {/*       GoTo("orders", '', { */}
-        {/*         page: Number(this.props.qs.page) - 1 */}
-        {/*       }) */}
-        {/*     } else { */}
-        {/*       console.log("No previous page") */}
-        {/*     } */}
-        {/*   }} */}
-        {/* > <ChildrenZ /> */}
-        {/* </Z> */}
-        {/* <Z */}
-        {/*   sel=".first-page" */}
-        {/*   onClick={() => { */}
-        {/*     console.log("to first page") */}
-        {/*     GoTo("orders", '', { page: 0 }) */}
-        {/*   }} */}
-        {/* > <ChildrenZ /> */}
-        {/* </Z> */}
-        {/* <Z */}
-        {/*   sel=".second-page" */}
-        {/*   onClick={() => { */}
-        {/*     console.log("to second page") */}
-        {/*     GoTo("orders", '', { page: 1 }) */}
-        {/*   }} */}
-        {/* > <ChildrenZ /> */}
-        {/* </Z> */}
-        {/* <Z */}
-        {/*   sel=".third-page" */}
-        {/*   onClick={() => { */}
-        {/*     console.log("to third page") */}
-        {/*     GoTo("orders", '', { page: 2 }) */}
-        {/*   }} */}
-        {/* > <ChildrenZ /> */}
-        {/* </Z> */}
-        {/* <Z */}
-        {/*   sel=".next-page" */}
-        {/*   onClick={() => { */}
-        {/*     console.log("next page") */}
-        {/*     GoTo("orders", '', { */}
-        {/*       page: Number(this.props.qs.page || "0") + 1 */}
-        {/*     }) */}
-        {/*   }} */}
-        {/* > <ChildrenZ /> */}
-        {/* </Z> */}
+        <ChildrenZ />
+        {/* <Z
+          sel=".back"
+          onClick={() => {
+            console.log("Go back to orders");
+            // This is because : this.props.qs.page is a string
+            if (this.props.qs.page && Number(this.props.qs.page)) {
+              GoTo("orders", "", {
+                ...this.props.qs,
+                page: Number(this.props.qs.page) - 1,
+              });
+            } else {
+              console.log("No previous page");
+            }
+          }}
+        >
+          <Z sel=".curr">{Number(this.props.qs.page || "0") + 1}</Z>
+          <Z
+            sel=".forward"
+            onClick={() => {
+              console.log("next page");
+              GoTo("orders", "", {
+                ...this.props.qs,
+                page: Number(this.props.qs.page || "0") + 1,
+              });
+            }}
+          >
+            <ChildrenZ />
+          </Z>
+        </Z> */}
       </JSXZ>
     );
   },
@@ -424,9 +418,7 @@ var Order = createReactClass({
             console.log("Go back to orders");
             history.back();
           }}
-        >
-          {/* <ChildrenZ /> */}
-        </Z>
+        ></Z>
       </JSXZ>
     );
   },
