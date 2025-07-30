@@ -123,7 +123,6 @@ defmodule Riak do
     end
   end
 
-  # Create a bucket by putting a dummy object (as mentioned in the chapter)
   def create_bucket() do
     put_object("first_key", "first_value")
   end
@@ -246,4 +245,59 @@ defmodule Riak do
         {:error, "Failed to read file: #{reason}"}
     end
   end
+
+  # Search function for querying the index
+  def search(index, query, page \\ 0, rows \\ 30, sort \\ "creation_date_index desc") do
+    start = page * rows
+    # URI encode the query and sort for URL safety
+    encoded_query = URI.encode(query)
+    encoded_sort = URI.encode(sort)
+
+    url_str = "#{url()}/search/query/#{index}/?wt=json&q=#{encoded_query}&start=#{start}&rows=#{rows}&sort=#{encoded_sort}"
+    url_charlist = String.to_charlist(url_str)
+    headers = auth_header()
+
+    case :httpc.request(:get, {url_charlist, headers}, [], []) do
+      {:ok, {{_, 200, _}, _headers, body}} ->
+        case Poison.decode(body) do
+          {:ok, decoded_body} -> {:ok, decoded_body}
+          {:error, reason} -> {:error, reason}
+        end
+
+      {:ok, {{_, status_code, _}, _headers, body}} ->
+        {:error, "HTTP #{status_code}: #{body}"}
+
+      {:error, reason} ->
+        {:error, reason}
+    end
+  end
+
+  # Escape special characters in Lucene queries
+  def escape(query) when is_binary(query) do
+    # Lucene special characters that need escaping: + - && || ! ( ) { } [ ] ^ " ~ * ? : \ /
+    # Note: We use %5C for backslash since it won't work directly in URLs
+    query
+    |> String.replace("\\", "%5C")
+    |> String.replace("+", "\\+")
+    |> String.replace("-", "\\-")
+    |> String.replace("&&", "\\&&")
+    |> String.replace("||", "\\||")
+    |> String.replace("!", "\\!")
+    |> String.replace("(", "\\(")
+    |> String.replace(")", "\\)")
+    |> String.replace("{", "\\{")
+    |> String.replace("}", "\\}")
+    |> String.replace("[", "\\[")
+    |> String.replace("]", "\\]")
+    |> String.replace("^", "\\^")
+    |> String.replace("\"", "\\\"")
+    |> String.replace("~", "\\~")
+    |> String.replace("*", "\\*")
+    |> String.replace("?", "\\?")
+    |> String.replace(":", "\\:")
+    |> String.replace("/", "\\/")
+    |> String.replace(" ", "%20")
+  end
+
+  def escape(query), do: query
 end
