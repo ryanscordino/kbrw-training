@@ -21,7 +21,7 @@ defmodule RouterReact do
     IO.inspect(conn.query_params, label: "Query Params")
     conn = Plug.Conn.fetch_query_params(conn)
     page = String.to_integer(conn.query_params["page"] || "0")
-    rows = String.to_integer(conn.query_params["rows"] || "30")
+    rows = String.to_integer(conn.query_params["rows"] || "10")
     search_query = conn.query_params["search"] || "*:*"
 
     index_name = Riak.index_name()

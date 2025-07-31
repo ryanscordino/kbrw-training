@@ -355,11 +355,10 @@ var Orders = createReactClass({
           </JSXZ>
         </Z>
         <ChildrenZ />
-        {/* <Z
+        <Z
           sel=".back"
           onClick={() => {
             console.log("Go back to orders");
-            // This is because : this.props.qs.page is a string
             if (this.props.qs.page && Number(this.props.qs.page)) {
               GoTo("orders", "", {
                 ...this.props.qs,
@@ -370,20 +369,21 @@ var Orders = createReactClass({
             }
           }}
         >
-          <Z sel=".curr">{Number(this.props.qs.page || "0") + 1}</Z>
-          <Z
-            sel=".forward"
-            onClick={() => {
-              console.log("next page");
-              GoTo("orders", "", {
-                ...this.props.qs,
-                page: Number(this.props.qs.page || "0") + 1,
-              });
-            }}
-          >
-            <ChildrenZ />
-          </Z>
-        </Z> */}
+          <ChildrenZ />
+        </Z>
+        <Z sel=".curr">{Number(this.props.qs.page || "0")}</Z>
+        <Z
+          sel=".forward"
+          onClick={() => {
+            console.log("next page");
+            GoTo("orders", "", {
+              ...this.props.qs,
+              page: Number(this.props.qs.page || "0") + 1,
+            });
+          }}
+        >
+          <ChildrenZ />
+        </Z>
       </JSXZ>
     );
   },
