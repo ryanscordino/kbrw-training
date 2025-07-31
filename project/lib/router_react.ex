@@ -22,12 +22,20 @@ defmodule RouterReact do
     conn = Plug.Conn.fetch_query_params(conn)
     page = String.to_integer(conn.query_params["page"] || "0")
     rows = String.to_integer(conn.query_params["rows"] || "30")
-    # Default to match all
-    search_query = conn.query_params["q"] || "*:*"
+    search_query = conn.query_params["search"] || "*:*"
 
-    index_name = "ryan_scordino_orders_index"
+    index_name = Riak.index_name()
 
     case Riak.search(index_name, search_query, page, rows, "creation_date_index desc") do
+      {:ok, %{"response" => %{"docs" => _docs, "numFound" => 0}}} ->
+        # No results found
+        conn
+        |> put_resp_content_type("application/json")
+        |> send_resp(
+          200,
+          Poison.encode!(%{orders: %{value: [], total: 0, page: page, rows: rows}})
+        )
+
       {:ok, %{"response" => %{"docs" => docs, "numFound" => total}}} ->
         IO.inspect(total)
         # Get full objects for each key found
@@ -55,16 +63,19 @@ defmodule RouterReact do
           }
         }
 
-        # IO.inspect(response)
-
         conn
         |> put_resp_content_type("application/json")
         |> send_resp(200, Poison.encode!(response))
 
       {:error, reason} ->
+        IO.puts(reason)
+
         conn
         |> put_resp_content_type("application/json")
-        |> send_resp(500, Poison.encode!(%{error: "Search failed: #{inspect(reason)}"}))
+        |> send_resp(
+          200,
+          Poison.encode!(%{orders: %{value: [], total: 0, page: page, rows: rows}})
+        )
     end
   end
 
@@ -85,55 +96,6 @@ defmodule RouterReact do
         conn
         |> put_resp_content_type("application/json")
         |> send_resp(500, Poison.encode!(%{error: "Failed to get order: #{inspect(reason)}"}))
-    end
-  end
-
-  get("/api/search") do
-    conn = Plug.Conn.fetch_query_params(conn)
-    search_query = conn.query_params["q"] || "*:*"
-    page = String.to_integer(conn.query_params["page"] || "0")
-    rows = String.to_integer(conn.query_params["rows"] || "30")
-
-    index_name = "ryan_scordino_orders_index"
-
-    case Riak.search(index_name, search_query, page, rows, "creation_date_index desc") do
-      {:ok, %{"response" => %{"docs" => docs, "numFound" => total}}} ->
-        # Get full objects for each key found
-        orders =
-          docs
-          # Extract Riak keys
-          |> Enum.map(fn doc -> doc["_yz_rk"] end)
-          # Remove any nil keys
-          |> Enum.filter(& &1)
-          |> Enum.map(fn key ->
-            case Riak.get_object(key) do
-              {:ok, order} -> order
-              {:error, _} -> nil
-            end
-          end)
-          # Remove any failed retrievals
-          |> Enum.filter(& &1)
-
-        # Format response to match frontend expectations with search metadata
-        # Format response to match frontend expectations with search metadata
-        response = %{
-          orders: %{
-            value: orders,
-            total: total,
-            page: page,
-            rows: rows,
-            query: search_query
-          }
-        }
-
-        conn
-        |> put_resp_content_type("application/json")
-        |> send_resp(200, Poison.encode!(response))
-
-      {:error, reason} ->
-        conn
-        |> put_resp_content_type("application/json")
-        |> send_resp(500, Poison.encode!(%{error: "Search failed: #{inspect(reason)}"}))
     end
   end
 

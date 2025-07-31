@@ -74,6 +74,12 @@ var remoteProps = {
       ...props.qs,
       // user_id: props.user.value.id
     };
+
+    // Make sure search query is included
+    if (props.qs.q) {
+      qs.q = props.qs.q;
+    }
+
     var query = Qs.stringify(qs);
     return {
       url: "/api/orders" + (query == "" ? "" : "?" + query),
@@ -204,12 +210,31 @@ var Layout = createReactClass({
 });
 
 var Header = createReactClass({
+  getInitialState() {
+    return {
+      searchQuery: this.props.qs.q || "",
+    };
+  },
+  handleSearchSubmit(e) {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const searchQuery = formData.get("search") || "*:*";
+
+    GoTo("orders", "", {
+      ...this.props.qs,
+      q: searchQuery,
+      page: 0, // Reset to first page when searching
+    });
+  },
   render() {
     console.log("Start header");
     return (
       <JSXZ in="orders" sel=".header-container">
         <Z sel=".heading-div-with-search">
           <ChildrenZ />
+          <JSXZ in="orders" sel=".search-div">
+            <Z sel=".search" onSubmit={(e) => this.handleSearchSubmit(e)}></Z>
+          </JSXZ>
         </Z>
         <Z sel=".body-div">
           <Child {...this.props} />
@@ -248,19 +273,6 @@ var Orders = createReactClass({
   // `statics`` lets you define static methods, field that belong to the component itself, not its instances.
   statics: {
     remoteProps: [remoteProps.orders],
-  },
-  getInitialState() {
-    return {
-      searchQuery: this.props.qs.q || "",
-    };
-  },
-  handleSearchSubmit(e) {
-    e.preventDefault();
-    GoTo("orders", "", {
-      ...this.props.qs,
-      q: this.state.searchQuery,
-      page: 0, // Reset to first page when searching
-    });
   },
   render() {
     console.log("Start orders");
@@ -443,15 +455,10 @@ var ErrorPage = createReactClass({
 function addRemoteProps(props) {
   return new Promise((resolve, reject) => {
     console.log("Adding remote props");
-    /**
-     * This is easily be mistaken for the global remoteProps
-     * [link](https://github.com/vuthanhtung2412/formation-kbrw/blob/809acd75e0c1b3a2e0b1c66a9d7891ce9a36fe72/realisation/rest/web/app.js#L54-L54)
-     */
     var remoteProps = Array.prototype.concat.apply(
       [],
       props.handlerPath
         // Orders.remoteProps = remoteProps.orders
-        // Example : https://github.com/vuthanhtung2412/formation-kbrw/blob/809acd75e0c1b3a2e0b1c66a9d7891ce9a36fe72/realisation/rest/web/app.js#L160-L162
         .map((c) => c.remoteProps) // -> [[remoteProps.orders], null]
         .filter((p) => p) // -> [[remoteProps.orders]]
     );
