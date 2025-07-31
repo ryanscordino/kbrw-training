@@ -89,19 +89,22 @@ defmodule Server.Database do
 
   @impl true
   def handle_call(:get_all, _from, state) do
-    all_orders = 
+    all_orders =
       :ets.tab2list(:kv_table)
       |> Enum.map(fn {_key, value} -> value end)
+
     {:reply, all_orders, state}
   end
 
   @impl true
   def handle_call({:get_first_n, n}, _from, state) do
     all_orders = :ets.tab2list(:kv_table)
-    first_n_orders = 
+
+    first_n_orders =
       all_orders
       |> Enum.map(fn {_key, value} -> value end)
       |> Enum.take(n)
+
     {:reply, first_n_orders, state}
   end
 

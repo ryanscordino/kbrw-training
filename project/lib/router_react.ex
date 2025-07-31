@@ -8,7 +8,10 @@ defmodule RouterReact do
 
   use Plug.Router
 
-  plug(Plug.Static, from: "priv/static", at: "/static")
+  require EEx
+  EEx.function_from_file(:def, :layout, "web/layout.html.eex", [:render])
+
+  plug(Plug.Static, at: "/public", from: :project)
   plug(:match)
   plug(:dispatch)
 
@@ -205,6 +208,22 @@ defmodule RouterReact do
     end
   end
 
-  get(_, do: send_file(conn, 200, "priv/static/index.html"))
+  get _ do
+    conn = fetch_query_params(conn)
+
+    render =
+      Reaxt.render!(
+        :app,
+        %{path: conn.request_path, cookies: conn.cookies, query: conn.params},
+        30_000
+      )
+
+    send_resp(
+      put_resp_header(conn, "content-type", "text/html;charset=utf-8"),
+      render.param || 200,
+      layout(render)
+    )
+  end
+
   match(_, do: send_resp(conn, 404, "Not found"))
 end

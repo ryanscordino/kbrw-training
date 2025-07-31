@@ -16,6 +16,16 @@ defmodule Project.Application do
       {Plug.Cowboy, scheme: :http, plug: RouterReact, options: [port: 4040]}
     ]
 
+    Application.put_env(
+      :reaxt,
+      :global_config,
+      Map.merge(
+        Application.get_env(:reaxt, :global_config),
+        %{localhost: "http://0.0.0.0:4040"}
+      )
+    )
+
+    Reaxt.reload()
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: Project.Supervisor]
