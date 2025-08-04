@@ -28,7 +28,8 @@ defmodule Project.MixProject do
       {:poison, "~> 5.0.0"},
       {:plug_cowboy, "~> 2.7.4"},
       {:ex_doc, "~> 0.34", only: :dev, runtime: false, warn_if_outdated: true},
-      {:reaxt, tag: "v4.1.1", github: "kbrw/reaxt"}
+      {:reaxt, tag: "v4.1.1", github: "kbrw/reaxt"},
+      {:exfsm, git: "https://github.com/kbrw/exfsm.git"}
     ]
   end
 end

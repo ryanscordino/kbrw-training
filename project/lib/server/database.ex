@@ -1,8 +1,8 @@
 defmodule Server.Database do
   use GenServer
 
-  def start_link([]) do
-    GenServer.start_link(__MODULE__, [], name: Db)
+  def start_link(args \\ []) do
+    GenServer.start_link(__MODULE__, args, name: Db)
   end
 
   def push(pid, {key, value}) do

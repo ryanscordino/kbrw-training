@@ -14,6 +14,31 @@ defmodule Riak do
     [{~c"authorization", ~c"Basic #{auth}"}]
   end
 
+  def initialize_commands() do
+    case Riak.get_keys() do
+      {:ok, keys} ->
+        Enum.map(keys, fn key ->
+          case Riak.get_object(key) do
+            {:ok, object} ->
+              updated_object = Map.put(object, "status", %{"state" => "init"})
+
+              case Riak.put_object(key, Poison.encode!(updated_object)) do
+                :ok -> {:ok, key}
+                {:error, reason} -> {:error, {key, reason}}
+              end
+
+            {:error, reason} ->
+              IO.puts("Failed to get object #{key}: #{inspect(reason)}")
+              {:error, {key, reason}}
+          end
+        end)
+
+      {:error, reason} ->
+        IO.puts("Failed to get keys: #{inspect(reason)}")
+        {:error, reason}
+    end
+  end
+
   def put_object(key, value) do
     url_str = ~c"#{url()}/buckets/#{bucket_name()}/keys/#{key}"
     headers = auth_header()
