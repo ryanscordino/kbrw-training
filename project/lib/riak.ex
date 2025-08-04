@@ -21,6 +21,7 @@ defmodule Riak do
           case Riak.get_object(key) do
             {:ok, object} ->
               updated_object = Map.put(object, "status", %{"state" => "init"})
+              IO.puts("Updating object for key: #{key}")
 
               case Riak.put_object(key, Poison.encode!(updated_object)) do
                 :ok -> {:ok, key}

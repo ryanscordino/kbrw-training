@@ -208,6 +208,42 @@ defmodule RouterReact do
     end
   end
 
+  put("/api/order/:id/payment") do
+    order_id = conn.path_params["id"]
+    IO.inspect(order_id, label: "Processing payment for order")
+
+    case FSM.GenServer.start_link(order_id) do
+      {:ok, pid} ->
+        IO.inspect(pid, label: "GenServer started/found")
+
+        case FSM.GenServer.process_payment(pid) do
+          {:ok, new_state} ->
+            IO.inspect(new_state, label: "Payment processed successfully")
+
+            conn
+            |> put_resp_content_type("application/json")
+            |> send_resp(200, Poison.encode!(%{message: "Payment processed", state: new_state}))
+
+          {:error, reason} ->
+            IO.inspect(reason, label: "Failed to process payment")
+
+            conn
+            |> put_resp_content_type("application/json")
+            |> send_resp(
+              500,
+              Poison.encode!(%{error: "Failed to process payment: #{inspect(reason)}"})
+            )
+        end
+
+      {:error, reason} ->
+        IO.inspect(reason, label: "Failed to start FSM GenServer")
+
+        conn
+        |> put_resp_content_type("application/json")
+        |> send_resp(500, Poison.encode!(%{error: "Failed to start FSM: #{inspect(reason)}"}))
+    end
+  end
+
   get _ do
     conn = fetch_query_params(conn)
 

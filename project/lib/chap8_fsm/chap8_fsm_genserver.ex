@@ -1,7 +1,6 @@
 defmodule FSM.GenServer do
   use GenServer
 
-  # 5 minutes in milliseconds
   @inactivity_timeout 5 * 60 * 1000
 
   def start_link(order_id) do

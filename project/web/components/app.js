@@ -312,8 +312,28 @@ var Orders = createReactClass({
                     
                   </Z>
                   <Z in="orders" sel=".div-body-table .button-pay"></Z>
-                  <Z in="orders" sel=".div-block-6 .tag-status">
-                    {payment.account_status ? payment.account_status : "Null"}
+                  <Z
+                    in="orders"
+                    sel=".div-block-6 .tag-status"
+                    onClick={() => {
+                      console.log(`Processing payment for order ${order.id}`);
+                      this.props.loader();
+                      HTTP.put(`/api/order/${order.id}/payment`)
+                        .then((response) => {
+                          console.log("Payment response:", response);
+                          window.location.reload();
+                          // reload("orders");
+                        })
+                        .catch((error) => {
+                          console.error("Payment error:", error);
+                          window.location.reload();
+                          alert(
+                            `Payment failed: you need to wait for the payment to be verified`
+                          );
+                        });
+                    }}
+                  >
+                    {order.status.state ? `${order.status.state} =>` : "error"}
                   </Z>
                   <Z in="orders" sel=".div-block-6 .tag-delivery">
                     {payment.additional_information[1]}
@@ -333,7 +353,8 @@ var Orders = createReactClass({
                             const loader_callback = this.props.loader();
                             HTTP.delete(`/api/order/${order.id}`)
                               .then((_) => {
-                                reload("orders");
+                                // reload("orders");
+                                window.location.reload();
                                 console.log(`Order ${order.id} deleted`);
                               })
                               .catch((err) => {
@@ -553,7 +574,7 @@ function addRemoteProps(props) {
   });
 }
 
-var browserState = {};
+var browserState;
 function onPathChange() {
   var path = location.pathname;
   var qs = Qs.parse(location.search.slice(1));
@@ -561,60 +582,61 @@ function onPathChange() {
   console.dir(qs, { depth: null });
   var cookies = Cookie.parse(document.cookie);
 
-  browserState = {
-    ...browserState,
-    path: path,
-    qs: qs,
-    cookie: cookies,
-  };
+  // browserState = {
+  //   ...browserState,
+  //   path: path,
+  //   qs: qs,
+  //   cookie: cookies,
+  // };
 
-  var route;
+  // var route;
+  // var routeProps;
 
-  // We try to match the requested path to one our our routes
-  for (var key in routes) {
-    routeProps = routes[key].match(path, qs);
-    if (routeProps) {
-      route = key;
-      console.log("routeProps");
-      console.dir(routeProps, { depth: null });
-      break;
-    }
-  }
+  // // We try to match the requested path to one our our routes
+  // for (var key in routes) {
+  //   routeProps = routes[key].match(path, qs);
+  //   if (routeProps) {
+  //     route = key;
+  //     console.log("routeProps");
+  //     console.dir(routeProps, { depth: null });
+  //     break;
+  //   }
+  // }
 
-  // We add the route name and the route Props to the global browserState
-  browserState = {
-    ...browserState,
-    ...routeProps,
-    route: route,
-  };
-  console.log("browserState:");
-  console.dir(browserState, { depth: null });
+  // // We add the route name and the route Props to the global browserState
+  // browserState = {
+  //   ...browserState,
+  //   ...routeProps,
+  //   route: route,
+  // };
+  // console.log("browserState:");
+  // console.dir(browserState, { depth: null });
 
-  // If the path in the URL doesn't match with any of our routes, we render an Error component (we will have to create it later)
-  if (!route)
-    return ReactDOM.render(
-      <ErrorPage message={"Not Found"} code={404} />,
-      document.getElementById("root")
-    );
+  // // If the path in the URL doesn't match with any of our routes, we render an Error component (we will have to create it later)
+  // if (!route)
+  //   return ReactDOM.render(
+  //     <ErrorPage message={"Not Found"} code={404} />,
+  //     document.getElementById("root")
+  //   );
 
-  addRemoteProps(browserState).then(
-    (props) => {
-      browserState = props;
-      // Log our new browserState
-      console.log(browserState);
-      // Render our components using our remote data
-      ReactDOM.render(
-        <Child {...browserState} />,
-        document.getElementById("root")
-      );
-    },
-    (res) => {
-      ReactDOM.render(
-        <ErrorPage message={"Shit happened"} code={res.http_code} />,
-        document.getElementById("root")
-      );
-    }
-  );
+  // addRemoteProps(browserState).then(
+  //   (props) => {
+  //     browserState = props;
+  //     // Log our new browserState
+  //     console.log(browserState);
+  //     // Render our components using our remote data
+  //     ReactDOM.render(
+  //       <Child {...browserState} />,
+  //       document.getElementById("root")
+  //     );
+  //   },
+  //   (res) => {
+  //     ReactDOM.render(
+  //       <ErrorPage message={"Shit happened"} code={res.http_code} />,
+  //       document.getElementById("root")
+  //     );
+  //   }
+  // );
 }
 
 function inferPropsChange(path, query, cookies) {
@@ -673,8 +695,17 @@ function reload(remoteProp) {
   );
 }
 
+// https://kbrw.slack.com/archives/C72EMMX1B/p1666688830060729
 export default {
   reaxt_server_render(params, render) {
+    // Force fresh fetch on server-side by clearing cached remote props
+    // This prevents stale data issues when server renders after client state changes
+    browserState = {
+      ...browserState,
+      orders: undefined, // Clear cached orders data
+      order: undefined, // Clear cached order data
+    };
+
     inferPropsChange(params.path, params.query, params.cookies).then(
       () => {
         render(<Child {...browserState} />);
