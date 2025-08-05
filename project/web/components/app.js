@@ -317,12 +317,10 @@ var Orders = createReactClass({
                     sel=".div-block-6 .tag-status"
                     onClick={() => {
                       console.log(`Processing payment for order ${order.id}`);
-                      this.props.loader();
                       HTTP.put(`/api/order/${order.id}/payment`)
                         .then((response) => {
                           console.log("Payment response:", response);
-                          window.location.reload();
-                          // reload("orders");
+                          Link.GoTo("orders", "", { _t: Date.now() });
                         })
                         .catch((error) => {
                           console.error("Payment error:", error);
@@ -350,20 +348,17 @@ var Orders = createReactClass({
                         callback: (value) => {
                           if (value) {
                             // Start the loader and HTTP request immediately
-                            const loader_callback = this.props.loader();
                             HTTP.delete(`/api/order/${order.id}`)
                               .then((_) => {
-                                // reload("orders");
-                                window.location.reload();
                                 console.log(`Order ${order.id} deleted`);
+                                Link.GoTo("orders", "", { _t: Date.now() });
                               })
                               .catch((err) => {
                                 alert("Deletion fails");
                               })
                               .finally(() => {
-                                loader_callback();
+                                console.log("Order deletion completed");
                               });
-                            return;
                           }
                           console.log(`Order ${order.id} deletion cancelled`);
                         },

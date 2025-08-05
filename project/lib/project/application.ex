@@ -14,6 +14,7 @@ defmodule Project.Application do
       # {Plug.Cowboy, scheme: :http, plug: Router3, options: [port: 4040]}
       {Plug.Cowboy, scheme: :http, plug: RouterReact, options: [port: 4040]}
       # FSM.GenServer
+
     ]
 
     Application.put_env(

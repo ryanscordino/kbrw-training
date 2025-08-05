@@ -15,7 +15,7 @@ defmodule Project.MixProject do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      extra_applications: [:logger, :inets, :ssl],
+      extra_applications: [:logger, :inets, :ssl, :ewebmachine],
       mod: {Project.Application, []}
     ]
   end
@@ -29,7 +29,8 @@ defmodule Project.MixProject do
       {:plug_cowboy, "~> 2.7.4"},
       {:ex_doc, "~> 0.34", only: :dev, runtime: false, warn_if_outdated: true},
       {:reaxt, tag: "v4.1.1", github: "kbrw/reaxt"},
-      {:exfsm, git: "https://github.com/kbrw/exfsm.git"}
+      {:exfsm, git: "https://github.com/kbrw/exfsm.git"},
+      {:ewebmachine, "2.3.2"}
     ]
   end
 end
