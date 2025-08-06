@@ -12,7 +12,9 @@ defmodule Project.Application do
       Server.Supervisor,
       # {Plug.Cowboy, scheme: :http, plug: PlugRouter2, options: [port: 4041]},
       # {Plug.Cowboy, scheme: :http, plug: Router3, options: [port: 4040]}
-      {Plug.Cowboy, scheme: :http, plug: RouterReact, options: [port: 4040]}
+      # {Plug.Cowboy, scheme: :http, plug: RouterReact, options: [port: 4040]}
+
+      {Plug.Cowboy, scheme: :http, plug: EwebmachineOrders.Router, options: [port: 4040]}
       # FSM.GenServer
 
     ]

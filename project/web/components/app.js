@@ -317,7 +317,7 @@ var Orders = createReactClass({
                     sel=".div-block-6 .tag-status"
                     onClick={() => {
                       console.log(`Processing payment for order ${order.id}`);
-                      HTTP.put(`/api/order/${order.id}/payment`)
+                      HTTP.post(`/api/order/${order.id}/payment`)
                         .then((response) => {
                           console.log("Payment response:", response);
                           Link.GoTo("orders", "", { _t: Date.now() });
