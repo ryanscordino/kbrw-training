@@ -7,14 +7,13 @@ defmodule EwebmachineOrders.Router do
   require EEx
   EEx.function_from_file(:def, :layout, "web/layout.html.eex", [:render])
 
-   resource "/public/*path" do %{path: Enum.join(path,"/")} after
-    resource_exists do:
-      File.regular?(path state.path)
-    content_types_provided do:
-      [{state.path|>Plug.MIME.path|>default_plain,:to_content}]
-    defh to_content, do:
-      File.stream!(path(state.path),[],300_000_000)
-    defp path(relative), do: "#{:code.priv_dir :project}/static/#{relative}"
+  resource "/public/*path" do
+    %{path: Enum.join(path, "/")}
+  after
+    resource_exists(do: File.regular?(path(state.path)))
+    content_types_provided(do: [{state.path |> Plug.MIME.path() |> default_plain, :to_content}])
+    defh(to_content, do: File.stream!(path(state.path), [], 300_000_000))
+    defp path(relative), do: "#{:code.priv_dir(:project)}/static/#{relative}"
     defp default_plain("application/octet-stream"), do: "text/plain"
     defp default_plain(type), do: type
   end
@@ -100,8 +99,10 @@ defmodule EwebmachineOrders.Router do
       case Riak.get_object(state.id) do
         {:ok, order} ->
           pass(true, order: order)
+
         {:error, :not_found} ->
           false
+
         {:error, _reason} ->
           false
       end
@@ -114,21 +115,28 @@ defmodule EwebmachineOrders.Router do
       case Riak.delete_object(state.id) do
         :ok ->
           pass(true, message: "Order deleted successfully")
+
         {:error, :not_found} ->
           false
+
         {:error, reason} ->
           pass(false, error: "Failed to delete order: #{inspect(reason)}")
       end
     end
 
     defh to_json do
+      IO.inspect(state.order)
+
       cond do
         Map.has_key?(state, :order) ->
           Poison.encode!(state.order)
+
         Map.has_key?(state, :message) ->
           Poison.encode!(%{message: state.message})
+
         Map.has_key?(state, :error) ->
           Poison.encode!(%{error: state.error})
+
         true ->
           Poison.encode!(%{error: "Order not found"})
       end
@@ -162,6 +170,7 @@ defmodule EwebmachineOrders.Router do
           case Riak.put_object(key, json_value) do
             :ok ->
               pass(true, message: "Added!")
+
             {:error, reason} ->
               pass(false, error: "Failed to create: #{inspect(reason)}")
           end
@@ -175,8 +184,10 @@ defmodule EwebmachineOrders.Router do
       cond do
         Map.has_key?(state, :message) ->
           Poison.encode!(%{message: state.message})
+
         Map.has_key?(state, :error) ->
           Poison.encode!(%{error: state.error})
+
         true ->
           Poison.encode!(%{error: "Unknown error"})
       end
@@ -210,6 +221,7 @@ defmodule EwebmachineOrders.Router do
           case Riak.put_object(key, json_value) do
             :ok ->
               pass(true, message: "Updated!", key: key, value: value)
+
             {:error, reason} ->
               pass(false, error: "Failed to update: #{inspect(reason)}")
           end
@@ -223,8 +235,10 @@ defmodule EwebmachineOrders.Router do
       cond do
         Map.has_key?(state, :message) ->
           Poison.encode!(%{message: state.message, key: state[:key], value: state[:value]})
+
         Map.has_key?(state, :error) ->
           Poison.encode!(%{error: state.error})
+
         true ->
           Poison.encode!(%{error: "Unknown error"})
       end
@@ -264,8 +278,10 @@ defmodule EwebmachineOrders.Router do
       cond do
         Map.has_key?(state, :message) ->
           Poison.encode!(%{message: state.message, state: state[:payment_state]})
+
         Map.has_key?(state, :error) ->
           Poison.encode!(%{error: state.error})
+
         true ->
           Poison.encode!(%{error: "Unknown error"})
       end

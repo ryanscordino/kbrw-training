@@ -16,7 +16,6 @@ defmodule Project.Application do
 
       {Plug.Cowboy, scheme: :http, plug: EwebmachineOrders.Router, options: [port: 4040]}
       # FSM.GenServer
-
     ]
 
     Application.put_env(
